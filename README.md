@@ -1,6 +1,6 @@
 # plenka
 
-A small Imgur-style site for sharing photos and videos with friends. You drop a file, you get a link.
+A small site for sharing photos and videos with friends. You drop a file, you get a link.
 No accounts, no sign-up.
 
 Live at [plenka-pics.ru](https://plenka-pics.ru).
@@ -52,22 +52,6 @@ Since anyone can upload without an account, I tried to be careful with a few thi
 
 Python, Django, PostgreSQL, Pillow, ffmpeg, nginx + gunicorn. The frontend is plain HTML, CSS and
 JavaScript, no frameworks. It supports light and dark themes and works on screens down to 320px.
-
-## Running it locally
-
-You need Python 3.11+ and ffmpeg installed.
-
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python manage.py makemigrations photos
-python manage.py migrate
-DEBUG=1 python manage.py runserver
-```
-
-Then open http://127.0.0.1:8000. Deployment notes (nginx, cron, env variables) are in
-[docs/DEPLOY.md](docs/DEPLOY.md), in Russian. The nginx config I use is in `deploy/nginx.conf`.
 
 ## Layout
 
