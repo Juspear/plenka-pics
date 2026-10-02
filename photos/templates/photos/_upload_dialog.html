@@ -1,0 +1,32 @@
+<dialog class="sheet" id="uploadDialog" aria-labelledby="uploadTitle" {% if upload_form.errors %}data-autoopen{% endif %}>
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <h2 id="uploadTitle">Загрузка</h2>
+      <button class="icon-btn" type="button" data-close-upload aria-label="Закрыть"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <form class="uploader{% if upload_form.errors %} picked{% endif %}" method="post" action="{% url 'photos:upload' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <label class="drop">
+        <input type="file" name="media" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" required>
+        <span class="drop-text">
+          <svg class="i big"><use href="#i-image"/></svg>
+          <strong>Перетащи фото или видео</strong>
+          <span>или <u>выбери файл</u><span class="paste">, можно вставить картинку через <kbd>Ctrl</kbd>+<kbd>V</kbd></span></span>
+        </span>
+        <span class="btn change">Заменить</span>
+      </label>
+      {{ upload_form.media.errors }}
+      <div class="after-pick">
+        <input class="field" name="title" maxlength="140" value="{{ upload_form.title.value|default:'' }}" placeholder="Название, можно без него" aria-label="Название">
+        <input type="hidden" name="visibility" value="link">
+        <label class="switch">
+          <span><b>Показывать в ленте</b><small>Иначе пост откроется только по ссылке</small></span>
+          <input type="checkbox" name="visibility" value="public" {% if upload_form.visibility.value == 'public' %}checked{% endif %}>
+          <span class="track"></span>
+        </label>
+        <button class="btn btn-accent btn-lg" id="submitBtn">Опубликовать</button>
+      </div>
+      <p class="hint">Фото до 20 МБ, видео до 200 МБ и 5 минут. Геолокация из файлов удаляется. {{ AUTODELETE_NOTE }}</p>
+    </form>
+  </div>
+</dialog>

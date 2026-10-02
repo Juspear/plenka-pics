@@ -1,0 +1,39 @@
+{% load stats %}
+{% if page.object_list %}
+<div class="grid">
+  {% for post in page %}
+  <a class="card" href="{{ post.get_absolute_url }}">
+    <span class="card-media">
+      {% if post.is_ready %}
+        <img src="{% url 'photos:thumb' post.slug %}" {% if post.width %}width="{{ post.width }}" height="{{ post.height }}"{% endif %} alt="{{ post.title }}" loading="lazy">
+      {% else %}
+        <span class="processing">{% if post.status == 'failed' %}Не удалось обработать{% else %}Обрабатывается…{% endif %}</span>
+      {% endif %}
+      {% if show_reports %}<span class="badge-reports{% if post.hidden_by_admin %} is-hidden{% endif %}"><svg class="i"><use href="#i-flag"/></svg>{{ post.reports }}{% if post.hidden_by_admin %}, скрыт{% endif %}</span>{% endif %}
+      {% if post.is_video %}<span class="badge-video"><svg class="i"><use href="#i-play"/></svg>{{ post.duration_label }}</span>{% endif %}
+    </span>
+    <div class="card-body">
+      {% if post.title %}<p class="card-title">{{ post.title }}</p>{% endif %}
+      <div class="card-meta">
+        <span class="stat" title="Просмотры"><svg class="i"><use href="#i-eye"/></svg>{{ post.views|compact }}</span>
+        <span class="stat" title="Последний просмотр"><svg class="i"><use href="#i-clock"/></svg>{% if post.last_viewed_at %}{{ post.last_viewed_at|ago }}{% else %}ещё не смотрели{% endif %}</span>
+        {% if show_lock and not post.is_public %}<span class="lock"><svg class="i"><use href="#i-lock"/></svg>по ссылке</span>{% endif %}
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% if page.has_other_pages %}
+<nav class="pager" aria-label="Страницы">
+  {% if page.has_previous %}<a class="btn" href="?page={{ page.previous_page_number }}">Назад</a>{% endif %}
+  <span>{{ page.number }} из {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="btn" href="?page={{ page.next_page_number }}">Дальше</a>{% endif %}
+</nav>
+{% endif %}
+{% else %}
+<div class="empty">
+  <h2>{{ empty_title }}</h2>
+  <p>{{ empty_text }}</p>
+  {% if not show_reports %}<button class="btn btn-accent" type="button" data-open-upload><svg class="i"><use href="#i-plus"/></svg>Загрузить</button>{% endif %}
+</div>
+{% endif %}

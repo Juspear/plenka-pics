@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="tabs" style="margin-top:20px" aria-label="Разделы">
+  <a class="tab" href="{% url 'photos:feed' %}" {% if tab == 'feed' %}aria-current="page"{% endif %}>Лента</a>
+  <a class="tab" href="{% url 'photos:mine' %}" {% if tab == 'reports' %}
+  {% include "photos/_grid.html" with show_reports=True empty_title="Жалоб нет" empty_text="Здесь появятся посты, на которые пожаловались." %}
+{% elif tab == 'mine' %}aria-current="page"{% endif %}>Мои{% if mine_count %} <span>{{ mine_count }}</span>{% endif %}</a>
+  {% if user.is_staff %}
+  <a class="tab tab-mod" href="{% url 'photos:reports' %}" {% if tab == 'reports' %}aria-current="page"{% endif %}>Жалобы{% if reports_count %} <b>{{ reports_count }}</b>{% endif %}</a>
+  {% endif %}
+</nav>
+
+{% if tab == 'mine' %}
+  {% include "photos/_grid.html" with show_lock=True empty_title="Здесь пока ничего" empty_text="Всё, что ты загрузишь с этого браузера, появится здесь." %}
+{% else %}
+  {% include "photos/_grid.html" with empty_title="В ленте пока пусто" empty_text="Выложи что-нибудь первым." %}
+{% endif %}
+{% endblock %}

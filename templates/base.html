@@ -1,0 +1,47 @@
+{% load static %}<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3F3F5">
+{% block meta %}{% endblock %}
+<title>{% block title %}плёнка{% endblock %}</title>
+<script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t})();</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FF6B2C'/%3E%3Cpath d='M16 9v14M9 16h14' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="{% static 'photos/app.css' %}">
+</head>
+<body>
+{% include "photos/_icons.html" %}
+<header class="top">
+  <div class="top-inner">
+    <a class="logo" href="{% url 'photos:feed' %}">плёнка<b>.</b></a>
+    <span class="spacer"></span>
+    <button class="icon-btn theme-btn" id="themeToggle" type="button" aria-label="Сменить тему">
+      <svg class="i sun"><use href="#i-sun"/></svg><svg class="i moon"><use href="#i-moon"/></svg>
+    </button>
+    <button class="icon-btn add-btn" type="button" data-open-upload aria-label="Загрузить фото или видео"><svg class="i"><use href="#i-plus"/></svg></button>
+  </div>
+</header>
+
+<main class="wrap">{% block content %}{% endblock %}</main>
+
+<footer class="foot">
+  <div class="foot-inner wrap">
+  <span class="made">Made by <a href="{{ AUTHOR_URL }}" target="_blank" rel="noopener">Juspear</a></span>
+  {% if user.is_staff %}
+    <form method="post" action="{% url 'photos:logout' %}">{% csrf_token %}<span>Админ {{ user.username }}, </span><button class="linkish">выйти</button></form>
+  {% else %}
+    <a class="linkish" href="{% url 'photos:login' %}">Admin</a>
+  {% endif %}
+  </div>
+</footer>
+
+{% include "photos/_upload_dialog.html" %}
+<dialog class="lightbox" id="lightbox" aria-label="Фото крупно">
+  <button class="icon-btn lb-close" type="button" aria-label="Закрыть"><svg class="i"><use href="#i-x"/></svg></button>
+  <div class="lb-stage"></div>
+</dialog>
+{% for m in messages %}<div class="toast" role="status">{{ m }}</div>{% endfor %}
+<script src="{% static 'photos/app.js' %}"></script>
+</body>
+</html>

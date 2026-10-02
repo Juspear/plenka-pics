@@ -1,0 +1,15 @@
+# /etc/systemd/system/plenka.service
+[Unit]
+Description=plenka (gunicorn)
+After=network.target postgresql.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/srv/photohost
+ExecStart=/srv/photohost/venv/bin/gunicorn photohost.wsgi:application --bind 127.0.0.1:8000 --workers 2 --timeout 300
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

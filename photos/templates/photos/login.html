@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block title %}Вход для админа — плёнка{% endblock %}
+{% block content %}
+<div class="auth">
+  <h1>Вход для админа</h1>
+  <p>Обычным посетителям аккаунт не нужен, загружать можно без входа.</p>
+  {% if locked %}
+    <p class="form-error">Слишком много попыток. Подожди 15 минут.</p>
+  {% endif %}
+  {% for e in form.non_field_errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+  <form class="stack" method="post">
+    {% csrf_token %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <div>
+      <label class="label" for="id_username">Логин</label>
+      <input class="field" id="id_username" name="username" autocomplete="username" required autofocus value="{{ form.username.value|default:'' }}">
+    </div>
+    <div>
+      <label class="label" for="id_password">Пароль</label>
+      <input class="field" id="id_password" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <button class="btn btn-accent btn-lg">Войти</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Django: локальные данные, их не нужно выкладывать
+db.sqlite3
+media/
+tmp/
+staticfiles/
+
+# Секреты
+.env
+*.env
+
+# Системное
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+cache/
+
+# Креды деплоя — только локально
+DEPLOY_CREDS.txt

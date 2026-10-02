@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load stats %}
+{% block meta %}
+<meta property="og:title" content="{{ post.title|default:'Пост' }}">
+<meta property="og:type" content="{% if post.is_video %}video.other{% else %}website{% endif %}">
+<meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ post.get_absolute_url }}">
+{% if post.is_ready %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'photos:thumb' post.slug %}">{% endif %}
+<meta name="twitter:card" content="summary_large_image">{% if not post.is_public %}<meta name="robots" content="noindex, nofollow">{% endif %}{% if post.status == 'processing' %}<meta http-equiv="refresh" content="5">{% endif %}{% endblock %}
+{% block title %}{{ post.title|default:"Пост" }} — плёнка{% endblock %}
+{% block content %}
+<div class="post{% if not is_owner and not user.is_staff %} post-solo{% endif %}">
+  <article>
+    <a class="back" href="{% url 'photos:feed' %}"><svg class="i"><use href="#i-back"/></svg>На главную</a>
+    <header class="post-head">
+      <h1>{{ post.title|default:"Без названия" }}</h1>
+      <div class="byline">
+        <span>Загружено {{ post.created_at|ago }}</span>
+        <span class="stat"><svg class="i"><use href="#i-eye"/></svg>{{ post.views|compact }}</span>
+        {% if post.last_viewed_at %}<span class="stat" title="Последний просмотр"><svg class="i"><use href="#i-clock"/></svg>{{ post.last_viewed_at|ago }}</span>{% endif %}
+        {% if not post.is_public %}<span class="pill"><svg class="i"><use href="#i-lock"/></svg>По ссылке</span>{% endif %}
+        {% if post.hidden_by_admin %}<span class="pill pill-danger">Скрыт после жалоб</span>{% endif %}
+      </div>
+    </header>
+    <div class="photo">
+      {% if post.status == 'processing' %}
+        <div class="processing big-processing"><span class="spinner"></span>Видео обрабатывается. Страница обновится сама.</div>
+      {% elif post.status == 'failed' %}
+        <div class="processing big-processing">Не удалось обработать видео. Попробуй загрузить его ещё раз.</div>
+      {% elif post.is_video %}
+        <video controls playsinline preload="metadata" poster="{% url 'photos:thumb' post.slug %}" width="{{ post.width }}" height="{{ post.height }}">
+          <source src="{% url 'photos:media' post.slug %}" type="video/mp4">
+        </video>
+      {% else %}
+        <button class="zoomable" type="button" data-zoom aria-label="Открыть фото крупно">
+          <img src="{% url 'photos:media' post.slug %}" width="{{ post.width }}" height="{{ post.height }}" alt="{{ post.title }}">
+          <span class="zoom-hint"><svg class="i"><use href="#i-expand"/></svg></span>
+        </button>
+      {% endif %}
+      <div class="share">
+        <input class="field" id="shareLink" readonly value="{{ request.scheme }}://{{ request.get_host }}{{ post.get_absolute_url }}" aria-label="Ссылка на пост">
+        <button class="btn" type="button" data-copy="shareLink"><svg class="i"><use href="#i-copy"/></svg><span>Копировать</span></button>
+      </div>
+    </div>
+    {% if not is_owner and not user.is_staff %}
+      <form class="report" method="post" action="{% url 'photos:report' post.slug %}" onsubmit="return confirm('Пожаловаться на этот пост?')">
+        {% csrf_token %}
+        {% if already_reported %}<span>Ты уже пожаловался на этот пост</span>{% else %}<button class="linkish">Пожаловаться</button>{% endif %}
+      </form>
+    {% endif %}
+  </article>
+
+  {% if is_owner or user.is_staff %}
+  <aside class="side">
+    {% if user.is_staff %}
+    <div class="box box-mod">
+      <h2>Модерация</h2>
+      <p class="mod-stat">Жалоб: <b>{{ post.reports }}</b>{% if post.hidden_by_admin %}, пост скрыт{% endif %}</p>
+      <div class="box-actions" style="margin-top:0;padding-top:0;border-top:0">
+        {% if post.hidden_by_admin or post.reports %}
+        <form method="post" action="{% url 'photos:moderate' post.slug %}">{% csrf_token %}<input type="hidden" name="action" value="approve"><button class="btn">Оставить</button></form>
+        {% endif %}
+        {% if not post.hidden_by_admin %}
+        <form method="post" action="{% url 'photos:moderate' post.slug %}">{% csrf_token %}<input type="hidden" name="action" value="hide"><button class="btn">Скрыть</button></form>
+        {% endif %}
+        <form method="post" action="{% url 'photos:moderate' post.slug %}" onsubmit="return confirm('Удалить пост вместе с файлами?')">{% csrf_token %}<input type="hidden" name="action" value="delete"><button class="btn btn-ghost-danger">Удалить</button></form>
+      </div>
+    </div>
+    {% endif %}
+    {% if is_owner %}
+    <div class="box">
+      <h2>Это твой пост</h2>
+      <form class="stack" method="post" action="{% url 'photos:update' post.slug %}">
+        {% csrf_token %}
+        <input class="field" name="title" value="{{ post.title }}" maxlength="140" placeholder="Название" aria-label="Название">
+        <input type="hidden" name="visibility" value="link">
+        <label class="switch">
+          <span><b>Показывать в ленте</b><small>Иначе пост открывается только по ссылке</small></span>
+          <input type="checkbox" name="visibility" value="public" {% if post.is_public %}checked{% endif %}>
+          <span class="track"></span>
+        </label>
+        <button class="btn btn-accent">Сохранить</button>
+      </form>
+      <div class="manage">
+        <label class="label" for="viewLink">Ссылка для просмотра</label>
+        <p>Отправь её друзьям — они смогут только смотреть пост, без доступа к управлению.</p>
+        <div class="share-inline">
+          <input class="field" id="viewLink" readonly value="{{ request.scheme }}://{{ request.get_host }}{{ post.get_absolute_url }}">
+          <button class="btn" type="button" data-copy="viewLink" aria-label="Копировать ссылку для просмотра"><svg class="i"><use href="#i-copy"/></svg></button>
+        </div>
+      </div>
+      <div class="box-actions">
+        <form method="post" action="{% url 'photos:reset' post.slug %}" onsubmit="return confirm('Старая ссылка на пост перестанет работать. Продолжить?')">
+          {% csrf_token %}<button class="btn">Сменить ссылку</button>
+        </form>
+        <form method="post" action="{% url 'photos:delete' post.slug %}" onsubmit="return confirm('Удалить пост навсегда?')">
+          {% csrf_token %}<button class="btn btn-ghost-danger">Удалить</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </aside>
+  {% endif %}
+</div>
+{% endblock %}
