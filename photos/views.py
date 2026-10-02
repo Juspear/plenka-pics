@@ -29,9 +29,7 @@ from .video import probe
 MB = 1024 * 1024
 
 
-# ---------- «свои» посты без аккаунтов ----------
-# Список своих постов хранится в сессии (cookie живёт год).
-# Запасной вариант — секретная ссылка управления ?key=..., как deletehash у Imgur.
+# свои посты хранятся в сессии; запасной доступ — ссылка ?key=
 
 def _owned_ids(request):
     return request.session.get("owned", [])
@@ -68,7 +66,6 @@ def _own_post_or_404(request, slug):
     return post
 
 
-# ---------- служебное ----------
 
 def _client_ip(request):
     """IP посетителя. За nginx берём X-Real-IP, который выставляет сам nginx.
@@ -111,7 +108,6 @@ def _signed_url(file, expire):
         return file.url                                      # локальная разработка
 
 
-# ---------- страницы ----------
 
 def _home(request, tab="feed", form=None, status=200):
     """Главная: загрузка сверху, ниже вкладки «Лента» и «Мои»."""
@@ -150,7 +146,6 @@ def reports(request):
     return _home(request, "reports")
 
 
-# ---------- вход для админа ----------
 
 class StaffLoginForm(AuthenticationForm):
     error_messages = {
@@ -180,7 +175,7 @@ def staff_login(request):
         ip_key = f"login-fails-ip:{_client_hash(request)}"
         username = (request.POST.get("username") or "").strip().lower()[:150]
         user_key = "login-fails-user:" + hashlib.sha256(username.encode()).hexdigest()[:32]
-        # Лимит и по IP, и по логину: перебор с разных IP тоже упрётся в стену
+        # лимит и по IP, и по логину
         if (cache.get(ip_key, 0) >= settings.LOGIN_ATTEMPTS
                 or cache.get(user_key, 0) >= settings.LOGIN_ATTEMPTS_PER_USER):
             return render(request, "photos/login.html",
@@ -218,7 +213,7 @@ def post_detail(request, slug):
     if post.hidden_by_admin and not (is_owner or request.user.is_staff):
         raise Http404
 
-    # Обработка зависла (например, сервер перезапустился) — честно показываем ошибку
+    # обработка зависла — показываем ошибку
     stuck_after = timedelta(seconds=settings.VIDEO_TRANSCODE_TIMEOUT + 300)
     if post.status == Post.Status.PROCESSING and timezone.now() - post.created_at > stuck_after:
         Post.objects.filter(pk=post.pk, status=Post.Status.PROCESSING).update(status=Post.Status.FAILED)
@@ -254,8 +249,7 @@ def media_file(request, slug, kind="full"):
     file = post.thumb if kind == "thumb" else post.media
     expire = settings.VIDEO_URL_EXPIRE if post.is_video and kind != "thumb" else settings.IMAGE_URL_EXPIRE
     if settings.MEDIA_X_ACCEL:
-        # Файлы на диске сервера отдаёт nginx, но только после проверок выше.
-        # Прямого адреса у файлов нет, поэтому скрытые и удалённые посты не утекут.
+        # файлы отдаёт nginx после проверок выше; прямого адреса у файлов нет
         response = HttpResponse()
         response["X-Accel-Redirect"] = "/_protected/" + file.name
         del response["Content-Type"]   # тип по расширению выставит nginx
@@ -362,7 +356,7 @@ def post_delete(request, slug):
 def post_report(request, slug):
     post = get_object_or_404(Post, slug=slug)
     reported = request.session.get("reported", [])
-    # Одна жалоба с одного IP на пост: иначе любой, почистив cookie, скроет чужой пост
+    # одна жалоба с IP на пост
     ip_key = f"report:{post.pk}:{_client_hash(request)}"
     if (post.pk not in reported and not _is_owner(request, post) and not request.user.is_staff
             and cache.add(ip_key, 1, 30 * 24 * 3600)):
