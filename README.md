@@ -5,9 +5,6 @@ Without accounts and sign-up.
 
 Live at [plenka-pics.ru](https://plenka-pics.ru).
 
-| | | |
-|---|---|---|
-| ![Feed](docs/screenshots/feed-desktop-dark.png) | ![Upload](docs/screenshots/upload-mobile-dark.png) | ![Video](docs/screenshots/video-mobile-light.png) |
 
 ## Why
 
