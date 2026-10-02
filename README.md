@@ -1,7 +1,7 @@
 # plenka
 
 A small site for sharing photos and videos with friends. You drop a file, you get a link.
-No accounts, no sign-up.
+Without accounts and sign-up.
 
 Live at [plenka-pics.ru](https://plenka-pics.ru).
 
