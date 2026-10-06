@@ -64,8 +64,4 @@ photohost/settings.py   limits and switches
 deploy/nginx.conf
 ```
 
-## License
-
-MIT
-
 Made by [Juspear](https://github.com/Juspear)
