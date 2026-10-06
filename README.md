@@ -64,4 +64,3 @@ photohost/settings.py   limits and switches
 deploy/nginx.conf
 ```
 
-Made by [Juspear](https://github.com/Juspear)
